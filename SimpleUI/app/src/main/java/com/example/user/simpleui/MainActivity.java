@@ -3,6 +3,9 @@ package com.example.user.simpleui;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
+import android.os.Build;
+import android.provider.MediaStore;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -16,6 +19,7 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.CheckBox;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.RadioGroup;
@@ -32,6 +36,7 @@ import com.parse.SaveCallback;
 
 import java.util.ArrayList;
 import java.util.List;
+import android.Manifest;
 
 import io.realm.Realm;
 import io.realm.RealmConfiguration;
@@ -40,6 +45,7 @@ import io.realm.RealmResults;
 public class MainActivity extends AppCompatActivity {
 
     private static final int REQUEST_CODE_MENU_ACTIVITY = 0;
+    private static final int REQUEST_CODE_CAMERA_ACTIVITY = 1;
 
     TextView textView;
     EditText editText;
@@ -51,6 +57,7 @@ public class MainActivity extends AppCompatActivity {
     ListView listView;
     Spinner spinner;
     ProgressBar progressBar;
+    ImageView photoImageView;
 
     String menuResults = "";
 
@@ -71,6 +78,7 @@ public class MainActivity extends AppCompatActivity {
         listView = (ListView)findViewById(R.id.listView);
         spinner = (Spinner)findViewById(R.id.spinner);
         progressBar = (ProgressBar)findViewById(R.id.progressBar);
+        photoImageView = (ImageView)findViewById(R.id.imageView);
         orders = new ArrayList<>();
 
         sp = getSharedPreferences("setting", Context.MODE_PRIVATE);
@@ -253,6 +261,12 @@ public class MainActivity extends AppCompatActivity {
 
             }
         }
+        else if (requestCode == REQUEST_CODE_CAMERA_ACTIVITY)
+        {
+            if(resultCode == RESULT_OK) {
+                photoImageView.setImageURI(Utils.getPhotoURI());
+            }
+        }
     }
 
     @Override
@@ -267,9 +281,27 @@ public class MainActivity extends AppCompatActivity {
         if (id == R.id.action_take_photo)
         {
             Toast.makeText(this, "Take Photo", Toast.LENGTH_LONG).show();
+            goToCamera();
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    protected void goToCamera()
+    {
+        if (Build.VERSION.SDK_INT >= 23)
+        {
+            if (checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED)
+            {
+                requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 0);
+                return;
+            }
+        }
+
+        Intent intent = new Intent();
+        intent.setAction(MediaStore.ACTION_IMAGE_CAPTURE);
+        intent.putExtra(MediaStore.EXTRA_OUTPUT, Utils.getPhotoURI());
+        startActivityForResult(intent, REQUEST_CODE_CAMERA_ACTIVITY);
     }
 
     @Override
