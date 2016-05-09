@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.net.Uri;
 import android.os.Build;
 import android.provider.MediaStore;
 import android.support.design.widget.Snackbar;
@@ -47,6 +48,8 @@ public class MainActivity extends AppCompatActivity {
 
     private static final int REQUEST_CODE_MENU_ACTIVITY = 0;
     private static final int REQUEST_CODE_CAMERA_ACTIVITY = 1;
+
+    private boolean hasPhoto = false;
 
     TextView textView;
     EditText editText;
@@ -180,8 +183,7 @@ public class MainActivity extends AppCompatActivity {
         query.findInBackground(new FindCallback<ParseObject>() {
             @Override
             public void done(List<ParseObject> objects, ParseException e) {
-                if (e != null)
-                {
+                if (e != null) {
                     Toast.makeText(MainActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show();
 
                     progressBar.setVisibility(View.GONE);
@@ -192,16 +194,14 @@ public class MainActivity extends AppCompatActivity {
 
                 Realm realm = Realm.getDefaultInstance();
 
-                for (int i=0; i< objects.size() ;i++)
-                {
+                for (int i = 0; i < objects.size(); i++) {
                     Order order = new Order();
                     order.setNote(objects.get(i).getString("note"));
                     order.setStoreInfo(objects.get(i).getString("storeInfo"));
                     order.setMenuResults(objects.get(i).getString("menuResults"));
                     orders.add(order);
 
-                    if (results.size() <= i)
-                    {
+                    if (results.size() <= i) {
                         realm.beginTransaction();
                         realm.copyToRealm(order);
                         realm.commitTransaction();
@@ -237,6 +237,22 @@ public class MainActivity extends AppCompatActivity {
         order.setNote(note);
         order.setStoreInfo((String) spinner.getSelectedItem());
 
+        if (hasPhoto)
+        {
+            Uri uri = Utils.getPhotoURI();
+
+            byte[] photo = Utils.uriToBytes(this, uri);
+
+            if (photo == null)
+            {
+                Log.d("Debug", "Read Photo Fail");
+            }
+            else
+            {
+                order.photo = photo;
+            }
+        }
+
         SaveCallbackWithRealm callbackWithRealm = new SaveCallbackWithRealm(order, new SaveCallback() {
             @Override
             public void done(ParseException e) {
@@ -246,6 +262,8 @@ public class MainActivity extends AppCompatActivity {
 
                 editText.setText("");
                 menuResults = "";
+                photoImageView.setImageResource(0);
+                hasPhoto = false;
 
                 setupListView();
             }
@@ -280,6 +298,7 @@ public class MainActivity extends AppCompatActivity {
         {
             if(resultCode == RESULT_OK) {
                 photoImageView.setImageURI(Utils.getPhotoURI());
+                hasPhoto = true;
             }
         }
     }
