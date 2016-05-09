@@ -15,6 +15,7 @@ import android.widget.ArrayAdapter;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.ProgressBar;
 import android.widget.RadioGroup;
 import android.widget.Spinner;
 import android.widget.TextView;
@@ -47,6 +48,7 @@ public class MainActivity extends AppCompatActivity {
     CheckBox checkBox;
     ListView listView;
     Spinner spinner;
+    ProgressBar progressBar;
 
     String menuResults = "";
 
@@ -66,6 +68,7 @@ public class MainActivity extends AppCompatActivity {
         checkBox = (CheckBox)findViewById(R.id.hideCheckBox);
         listView = (ListView)findViewById(R.id.listView);
         spinner = (Spinner)findViewById(R.id.spinner);
+        progressBar = (ProgressBar)findViewById(R.id.progressBar);
         orders = new ArrayList<>();
 
         sp = getSharedPreferences("setting", Context.MODE_PRIVATE);
@@ -141,6 +144,7 @@ public class MainActivity extends AppCompatActivity {
 
     void setupListView()
     {
+        progressBar.setVisibility(View.VISIBLE);
 
         final RealmResults results = realm.allObjects(Order.class);
 
@@ -154,6 +158,8 @@ public class MainActivity extends AppCompatActivity {
                 if (e != null)
                 {
                     Toast.makeText(MainActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show();
+
+                    progressBar.setVisibility(View.GONE);
 
                     return;
                 }
@@ -178,6 +184,8 @@ public class MainActivity extends AppCompatActivity {
                 }
 
                 realm.close();
+
+                progressBar.setVisibility(View.GONE);
 
                 OrderAdapter adapter = new OrderAdapter(MainActivity.this, orders);
                 listView.setAdapter(adapter);
