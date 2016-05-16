@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
+import android.os.SystemClock;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.widget.ImageView;
@@ -23,6 +24,10 @@ public class OrderDetailActivity extends AppCompatActivity {
     TextView storeInfo;
     TextView menuResults;
     ImageView photo;
+    ImageView mapImageView;
+
+    String storeName;
+    String address;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -33,10 +38,16 @@ public class OrderDetailActivity extends AppCompatActivity {
         storeInfo = (TextView)findViewById(R.id.storeInfo);
         menuResults = (TextView)findViewById(R.id.menuResults);
         photo = (ImageView)findViewById(R.id.photoImageView);
+        mapImageView = (ImageView)findViewById(R.id.mapImageView);
 
         Intent intent = getIntent();
         note.setText(intent.getStringExtra("note"));
         storeInfo.setText(intent.getStringExtra("storeInfo"));
+
+        String[] info = intent.getStringExtra("storeInfo").split(",");
+
+        storeName = info[0];
+        address = info[1];
 
         String results = intent.getStringExtra("menuResults");
         String text = "";
@@ -58,9 +69,24 @@ public class OrderDetailActivity extends AppCompatActivity {
         if (!url.equals(""))
         {
 //            Picasso.with(this).load(url).into(photo);
-//            (new ImageLoadingTask(photo)).execute(url);
-            (new GeoCodingTask(photo)).execute("台北市羅斯福路四段一號");
+            (new ImageLoadingTask(photo)).execute(url);
+//            (new GeoCodingTask(photo)).execute("台北市羅斯福路四段一號");
         }
+
+        (new GeoCodingTask(mapImageView)).execute(address);
+
+//        for(int i = 0; i < 10; i++)
+//        {
+//            Thread t = new Thread(new Runnable() {
+//                @Override
+//                public void run() {
+//                    while (true)
+//                    {
+//                        SystemClock.sleep(1000);
+//                    }
+//                }
+//            });
+//        }
 
 //        menuResults.setText(intent.getStringExtra("menuResults"));
 
